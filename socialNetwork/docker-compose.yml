@@ -1,0 +1,482 @@
+version: "3.9"
+services:
+  social-graph-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: social-graph-service
+    ports:
+      - "10000:9090"
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+      social-graph-mongodb:
+        condition: service_started
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    restart: always
+    entrypoint: SocialGraphService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  social-graph-mongodb:
+    image: mongo:4.4.6
+    hostname: social-graph-mongodb
+    ports:
+      - "27018:27017"
+    restart: always
+
+  social-graph-redis:
+    image: redis
+    hostname: social-graph-redis
+    ports:
+      - "6380:6379"
+    restart: always
+
+  home-timeline-redis:
+    image: redis
+    hostname: home-timeline-redis
+    ports:
+      - "6381:6379"
+    restart: always
+
+  compose-post-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: compose-post-service
+    ports:
+      - "10001:9090"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: ComposePostService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  post-storage-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: post-storage-service
+    ports:
+      - "10002:9090"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+      post-storage-mongodb:
+        condition: service_started
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: PostStorageService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  post-storage-memcached:
+    image: memcached
+    hostname: post-storage-memcached
+    ports:
+      - "11212:11211"
+    restart: always
+
+  post-storage-mongodb:
+    image: mongo:4.4.6
+    hostname: post-storage-mongodb
+    ports:
+      - "27019:27017"
+    restart: always
+
+  user-timeline-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: user-timeline-service
+    ports:
+      - "10003:9090"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+      user-timeline-mongodb:
+        condition: service_started
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: UserTimelineService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  user-timeline-redis:
+    image: redis
+    hostname: user-timeline-redis
+    ports:
+      - "6383:6379"
+    restart: always
+
+  user-timeline-mongodb:
+    image: mongo:4.4.6
+    hostname: user-timeline-mongodb
+    ports:
+      - "27020:27017"
+    restart: always
+
+  url-shorten-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: url-shorten-service
+    ports:
+      - "10004:9090"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+      url-shorten-mongodb:
+        condition: service_started
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: UrlShortenService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  url-shorten-memcached:
+    image: memcached
+    hostname: url-shorten-memcached
+    ports:
+      - "11213:11211"
+    restart: always
+
+  url-shorten-mongodb:
+    image: mongo:4.4.6
+    hostname: url-shorten-mongodb
+    ports:
+      - "27021:27017"
+    restart: always
+
+  user-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: user-service
+    ports:
+      - "10005:9090"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+      user-mongodb:
+        condition: service_started
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: UserService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  user-memcached:
+    image: memcached
+    hostname: user-memcached
+    ports:
+      - "11214:11211"
+    restart: always
+
+  user-mongodb:
+    image: mongo:4.4.6
+    hostname: user-mongodb
+    ports:
+      - "27023:27017"
+    restart: always
+
+  media-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: media-service
+    ports:
+      - "10006:9090"
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+      media-mongodb:
+        condition: service_started
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    restart: always
+    entrypoint: MediaService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  media-memcached:
+    image: memcached
+    hostname: media-memcached
+    ports:
+      - "11215:11211"
+    restart: always
+
+  media-mongodb:
+    image: mongo:4.4.6
+    hostname: media-mongodb
+    ports:
+      - "27024:27017"
+    restart: always
+
+  text-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: text-service
+    ports:
+      - "10007:9090"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: TextService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  unique-id-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: unique-id-service
+    ports:
+      - "10008:9090"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: UniqueIdService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  user-mention-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: user-mention-service
+    ports:
+      - "10009:9090"
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+    restart: always
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: UserMentionService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  home-timeline-service:
+    image: deathstarbench/social-network-microservices:latest
+    hostname: home-timeline-service
+    ports:
+      - "10010:9090"
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+    restart: always
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    entrypoint: HomeTimelineService
+    volumes:
+      - ./config:/social-network-microservices/config
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  nginx-thrift:
+    image: yg397/openresty-thrift:xenial
+    hostname: nginx-thrift
+    ports:
+      - "8080:8080"
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    restart: always
+    volumes:
+      - ./nginx-web-server/lua-scripts:/usr/local/openresty/nginx/lua-scripts
+      - ./nginx-web-server/pages:/usr/local/openresty/nginx/pages
+      - ./nginx-web-server/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./nginx-web-server/jaeger-config.json:/usr/local/openresty/nginx/jaeger-config.json
+      - ./gen-lua:/gen-lua
+      - ./docker/openresty-thrift/lua-thrift:/usr/local/openresty/lualib/thrift
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8080"]
+      interval: 10s
+      retries: 5
+      start_period: 60s
+
+  media-frontend:
+    image: yg397/media-frontend:xenial
+    hostname: media-frontend
+    ports:
+      - "8082:8080"
+    restart: always
+    depends_on:
+      jaeger-agent:
+        condition: service_healthy
+    environment:
+      - JAEGER_SAMPLER_TYPE=const
+      - JAEGER_SAMPLER_PARAM=0.1
+    volumes:
+      - ./media-frontend/lua-scripts:/usr/local/openresty/nginx/lua-scripts
+      - ./media-frontend/conf/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8080"]
+      interval: 10s
+      retries: 10
+      start_period: 120s
+
+  jaeger-agent:
+    image: jaegertracing/all-in-one:1.40
+    hostname: jaeger-agent
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"
+      - "14268:14268"
+      - "14250:14250"
+      - "9411:9411"
+      - "8888:8888"
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+      - SAMPLING_STRATEGIES='{"service_strategies":[{"service":"*","type":"probabilistic","param":0.1}]}'
+      - METRICS_STORAGE_TYPE=prometheus
+      - PROMETHEUS_SERVER_URL=http://prometheus:9090
+      - JAEGER_QUERY_MENU_ENABLED=true
+      - prometheus.query.support-spanmetrics-connector=true
+      - JAEGER_TELEMETRY_METRICS_LEVEL=detailed
+      - JAEGER_TELEMETRY_METRICS_ADDRESS=0.0.0.0:8888
+      - JAEGER_STORAGE_BACKEND=memory
+      - JAEGER_QUERY_TRACES_STORAGE=memory
+      - JAEGER_QUERY_METRICS_STORAGE=prometheus
+      - REPORTER_GRPC_RETRY_MAX=5
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:14269"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    restart: always
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+    restart: always
+
+  blackbox-exporter:
+    image: prom/blackbox-exporter:v0.24.0
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./blackbox.yml:/etc/blackbox.yml
+    command:
+      - --config.file=/etc/blackbox.yml
+    restart: always
+    
+  grafana:
+    image: grafana/grafana:11.2.0
+    hostname: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    depends_on:
+      - prometheus
+      - jaeger-agent
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+    restart: always
+    
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8081:8080" # Expose cAdvisor on host port 8081
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
+    restart: always
+    depends_on:
+      - prometheus
+
+volumes:
+  grafana-data:
+    driver: local

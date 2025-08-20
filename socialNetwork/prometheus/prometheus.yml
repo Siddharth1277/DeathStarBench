@@ -1,0 +1,40 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'jaeger'
+    static_configs:
+      - targets: ['jaeger-agent:8888']
+
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  - job_name: 'social-network-health'
+    metrics_path: /probe
+    params:
+      module: [tcp_connect]
+    static_configs:
+      - targets:
+        - 'compose-post-service:9090'
+        - 'home-timeline-service:9090'
+        - 'media-service:9090'
+        - 'post-storage-service:9090'
+        - 'social-graph-service:9090'
+        - 'text-service:9090'
+        - 'unique-id-service:9090'
+        - 'url-shorten-service:9090'
+        - 'user-mention-service:9090'
+        - 'user-service:9090'
+        - 'user-timeline-service:9090'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
